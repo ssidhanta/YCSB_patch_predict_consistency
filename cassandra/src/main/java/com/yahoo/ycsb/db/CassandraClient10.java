@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
 import java.util.Random;
+
 import java.util.Properties;
 import java.nio.ByteBuffer;
 
@@ -36,7 +37,8 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.cassandra.thrift.*;
-
+import com.yahoo.ycsb.db.Learner;
+import java.io.File;
 
 //XXXX if we do replication, fix the consistency levels
 /**
@@ -77,7 +79,9 @@ public class CassandraClient10 extends DB
   public static final String DELETE_CONSISTENCY_LEVEL_PROPERTY = "cassandra.deleteconsistencylevel";
   public static final String DELETE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT = "ONE";
 
-
+  public static final File f_test = new File("/tmp/test_data.arff");
+  public static String[] cLevel = null;
+  
   TTransport tr;
   Cassandra.Client client;
 
@@ -120,11 +124,18 @@ public class CassandraClient10 extends DB
 
     String username = getProperties().getProperty(USERNAME_PROPERTY);
     String password = getProperties().getProperty(PASSWORD_PROPERTY);
-
-    readConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-    writeConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(WRITE_CONSISTENCY_LEVEL_PROPERTY, WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-    scanConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(SCAN_CONSISTENCY_LEVEL_PROPERTY, SCAN_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-    deleteConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(DELETE_CONSISTENCY_LEVEL_PROPERTY, DELETE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+	
+	//predicted consistency level added by Subhajit
+	cLevel = Learner.predict_Final(f_test);
+	readConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+	writeConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+	scanConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+	deleteConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+	
+    //readConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+    //writeConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(WRITE_CONSISTENCY_LEVEL_PROPERTY, WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+    //scanConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(SCAN_CONSISTENCY_LEVEL_PROPERTY, SCAN_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+    //deleteConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(DELETE_CONSISTENCY_LEVEL_PROPERTY, DELETE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
 
 
     _debug = Boolean.parseBoolean(getProperties().getProperty("debug", "false"));
@@ -237,7 +248,11 @@ public class CassandraClient10 extends DB
 
           predicate = new SlicePredicate().setColumn_names(fieldlist);
         }
-
+		
+		//predicted consistency level added by Subhajit
+		cLevel = Learner.predict_Final(f_test);
+		readConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+		
         List<ColumnOrSuperColumn> results = client.get_slice(ByteBuffer.wrap(key.getBytes("UTF-8")), parent, predicate, readConsistencyLevel);
 
         if (_debug)
@@ -344,6 +359,10 @@ public class CassandraClient10 extends DB
 
         KeyRange kr = new KeyRange().setStart_key(startkey.getBytes("UTF-8")).setEnd_key(new byte[] {}).setCount(recordcount);
 
+		//predicted consistency level added by Subhajit
+		cLevel = Learner.predict_Final(f_test);
+		scanConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+		
         List<KeySlice> results = client.get_range_slices(parent, predicate, kr, scanConsistencyLevel);
 
         if (_debug)
@@ -474,6 +493,10 @@ public class CassandraClient10 extends DB
         mutationMap.put(column_family, mutations);
         record.put(wrappedKey, mutationMap);
 
+		//predicted consistency level added by Subhajit
+		cLevel = Learner.predict_Final(f_test);
+		writeConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+		
         client.batch_mutate(record, writeConsistencyLevel);
 
         mutations.clear();
@@ -532,6 +555,11 @@ public class CassandraClient10 extends DB
     {
       try
       {
+	  
+		//predicted consistency level added by Subhajit
+		cLevel = Learner.predict_Final(f_test);
+		deleteConsistencyLevel = ConsistencyLevel.valueOf(cLevel[0]);
+		
         client.remove(ByteBuffer.wrap(key.getBytes("UTF-8")),
                       new ColumnPath(column_family),
                       System.currentTimeMillis(),
