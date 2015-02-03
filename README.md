@@ -1,3 +1,6 @@
+------------------------------------
+Please refer to the technical paper Consistency.pdf in the folder.
+-----------------------------------------------------------------------------------------
 Yahoo! Cloud System Benchmark (YCSB)
 ====================================
 [![Build Status](https://travis-ci.org/brianfrankcooper/YCSB.png?branch=master)](https://travis-ci.org/brianfrankcooper/YCSB)
