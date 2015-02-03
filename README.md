@@ -1,4 +1,10 @@
 ------------------------------------
+We add code in the Cassandra Client for YCSB to call OptCon Client for Predicting the 
+Consistency Level to apply to an YCSB operation.
+
+We add code for collecting parameters latency, throughput using Cassandra's JMX Interface. We also include code for measuring packet count using libpcap, and client thread count from operating system Java management bean. We measure Staleeness using Gamma metric (described in the paper). We log the parameters into a txt file for usage in training phase using the OptCon framework, for predicting the appropriate client side consistency setting. 
+  
+
 Please refer to the technical paper Consistency.pdf in the folder.
 -----------------------------------------------------------------------------------------
 Yahoo! Cloud System Benchmark (YCSB)
